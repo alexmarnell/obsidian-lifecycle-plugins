@@ -57,3 +57,12 @@ The collector agent reads vault conventions (CLAUDE.md and Style Guide), chooses
 ## After Capture
 
 Display the note title and full file path created. Summarize what was captured in one sentence. Remind the user the note is in Collect/ and will be processed during weekly review.
+
+**Daily log prompt:**
+After reporting the captured note, check whether the user's original input mentioned the daily log, daily note, or journal entry. If they did NOT mention it, ask:
+
+> Would you also like me to add an entry to today's daily log referencing this note?
+
+If the user says yes, add a bullet to the daily log linking to the new Collect note. The daily log lives at `$LIFECYCLE_VAULT_PATH/Journal/<YYYY-MM-DD>.md` — create the file if it doesn't exist yet, or append to it if it does. Use the same date format the vault uses.
+
+If the user already asked for a daily log entry as part of their original capture request, handle it automatically without prompting.
