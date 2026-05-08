@@ -1,7 +1,7 @@
 ---
 name: lc-recall
 description: "This skill should be used when the user types \"/lc-recall\", asks to \"recall from vault\", \"search vault notes\", \"find in lifecycle vault\", \"bring notes into context\", \"check the vault for\", \"look up in vault\", \"pull notes about\", \"what do we have on\", or wants to retrieve knowledge from their Obsidian Lifecycle System vault to inform the current conversation."
-argument-hint: "<hint describing what to search for>"
+argument-hint: "[--quick] [--limit N] [--all] <hint describing what to search for>"
 allowed-tools: ["Agent", "Bash", "Read"]
 ---
 
@@ -40,13 +40,21 @@ Before any search, verify the `LIFECYCLE_VAULT_PATH` environment variable:
 
 Parse the input provided after `/lc-recall`:
 
-- The entire argument is the search hint — a freeform description of what to find
-- If no hint is provided, ask the user what to search for
+**Flags (extract before the search hint):**
+
+- **`--quick`** — Title-only search. Skip MOC reading and graph walking. Match filenames only (does not need to be exact). Fast lookup for when the user knows roughly what the file is called.
+- **`--limit N`** — Set the maximum number of results to return (default: 10). Example: `--limit 5` returns at most 5 results.
+- **`--all`** — Return all matching results with no limit. Overrides `--limit` if both are provided.
+
+**Search hint:** Everything remaining after flags are stripped is the search hint — a freeform description of what to find. If no hint is provided, ask the user what to search for.
 
 **Examples:**
-- `/lc-recall authentication patterns` — search for auth-related notes
+- `/lc-recall authentication patterns` — full Catalog-first search, default 10 results
+- `/lc-recall --quick telemetry-go v2 design` — fast title-only search, no MOC walking
+- `/lc-recall --limit 3 deployment pipeline` — full search, return top 3 only
+- `/lc-recall --all OTel` — full search, return everything that matches
 - `/lc-recall what do we know about deployment pipelines` — natural language query
-- `/lc-recall` — no hint, ask the user what to look for
+- `/lc-recall` — no arguments, ask the user what to look for
 
 ## Spawning the Recall Agent
 
@@ -56,9 +64,13 @@ Use the Agent tool to spawn the `recall` agent. Build the prompt with this struc
 Vault path: <resolved LIFECYCLE_VAULT_PATH>
 
 Search for: <user's search hint>
+Mode: <"quick" if --quick flag was set, otherwise "full">
+Limit: <integer from --limit, "none" if --all, or "10" as default>
 ```
 
-The recall agent uses a Catalog-first search strategy: it searches Catalog MOCs first to understand topic relationships, follows their curated links to Library notes, then broadens to keyword search. It returns structured JSON results.
+In **full mode** (default), the recall agent uses a Catalog-first search strategy: it searches Catalog MOCs first, follows their curated links, then broadens to keyword search.
+
+In **quick mode**, the recall agent skips MOC reading entirely — it only matches filenames across the vault using Glob, then returns results ranked by title relevance. No files are read for summaries; titles and folder locations are returned as-is. This is significantly faster.
 
 ## Processing Results
 
