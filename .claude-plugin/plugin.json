@@ -1,6 +1,6 @@
 {
   "name": "obsidian-lifecycle-bridge",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Bridge your Obsidian Lifecycle System vault into any Claude Code project — capture knowledge and recall notes across workspaces.",
   "author": {
     "name": "Alex Arnell"

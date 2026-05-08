@@ -9,10 +9,6 @@ allowed-tools: ["Agent", "Bash", "Read"]
 
 Search an Obsidian Lifecycle System vault for relevant notes and surface them into the current conversation. Validate configuration, spawn the recall agent to search, then examine results and suggest files to load.
 
-## Configuration
-
-The vault path is available via the `$LIFECYCLE_VAULT_PATH` environment variable. Do not resolve it — pass it by name to the agent, which will resolve it when needed.
-
 ## Argument Parsing
 
 Parse the input provided after `/lc-recall`:
@@ -38,7 +34,7 @@ Parse the input provided after `/lc-recall`:
 Use the Agent tool to spawn the `recall` agent. Build the prompt with this structure:
 
 ```
-Vault path: $LIFECYCLE_VAULT_PATH
+Vault: !`echo "${LIFECYCLE_VAULT:?LIFECYCLE_VAULT is not set in your settings.json}"`
 
 Search for: <user's search hint>
 Mode: <"quick" if --quick flag was set, otherwise "full">
@@ -51,43 +47,54 @@ In **quick mode**, the recall agent skips MOC reading entirely — it only match
 
 ## Processing Results
 
-When the recall agent completes, parse the returned JSON. The expected result shape:
+The agent uses graph-based ranking: it picks 2–5 seed notes from the user's query, walks each seed's outgoing and incoming wikilinks, then scores every neighborhood note by adjacency to seeds (with hub-seeds down-weighted, à la Adamic-Adar).
+
+Results split into two buckets:
+- **`notes`** — Library, Refine, Collect, Daily entries. Substantive content the user wants. Capped by `--limit`.
+- **`maps`** — Catalog MOCs. Organizational scaffolding that links the notes together. Capped at 5.
+
+`Archive/` and `Resources/` are excluded by default.
 
 ```json
 {
   "query": "original search hint",
-  "total_matches": 12,
-  "showing": 10,
-  "results": [
+  "seeds": ["Seed Note Title", "Another Seed"],
+  "notes": [
     {
-      "path": "/absolute/path/to/note.md",
+      "path": "/absolute/path.md",
       "title": "Note Title",
       "folder": "Library",
-      "summary": "One-line content summary",
-      "relevance": "Why this matches the search hint",
-      "via_moc": "Topic MOC Name (if found through a Catalog MOC)"
+      "summary": "One-line summary, or null",
+      "relevance": "Why this matches",
+      "score": 1.42,
+      "match_sources": ["title", "content"],
+      "connections": ["Seed Note Title", "Another Seed"]
     }
   ],
-  "suggestions": ["alternative search term 1", "alternative term 2"]
+  "maps": [
+    {
+      "path": "/absolute/path.md",
+      "title": "Topic (MOC)",
+      "folder": "Catalog",
+      "summary": "...",
+      "score": 1.83,
+      "match_sources": ["graph"],
+      "connections": ["Seed Note Title"]
+    }
+  ],
+  "totals": {
+    "notes_total": 12, "notes_showing": 10,
+    "maps_total": 4, "maps_showing": 4
+  },
+  "suggestions": []
 }
 ```
 
-Present findings to the user:
+**Present results:**
 
-1. **Display a readable summary** of matching notes — title, folder, and why each matches
-2. **Highlight MOC-sourced results** — note which results came through Catalog MOCs (these are higher confidence)
-3. **Recommend specific files to load** based on relevance to the current conversation or task
-4. **Offer to load them** — use the Read tool to bring recommended files into context if the user agrees
-5. **If the agent reported many matches**, relay the total count and suggest the user refine their search
-
-**Presentation format:**
-
-> Found **N** relevant notes in your vault:
->
-> 1. **Note Title** (`Library/`) — one-line summary *(via Web Development MOC)*
-> 2. **Note Title** (`Library/`) — one-line summary
-> ...
->
-> Recommended to load: #1 and #3 are most relevant to your current work. Load them?
-
-If no results were found, relay the agent's alternative search term suggestions.
+1. Mention the seeds the agent used. Example: *"Walked the graph from these seeds: **Seed A**, **Seed B**."*
+2. **Lead with `notes`** — these are what the user is most likely to want. List as `**Title** (`Folder/`) — summary`. Append `*(connected to: Seed A, Seed B)*` for multi-connection results.
+3. **Then list `maps`** under a separate "Related maps" or similar heading. Frame them as scaffolding: "These index notes link to the results above and may have more pointers."
+4. Recommend specific notes to load, then offer to Read them. Don't recommend loading maps unless the user asks — they're linked-to from the notes anyway.
+5. If `totals.notes_total > totals.notes_showing` or similar, mention the overflow and suggest narrowing.
+6. If both `notes` and `maps` are empty, relay `suggestions`.

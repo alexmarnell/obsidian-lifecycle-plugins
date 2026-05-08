@@ -9,10 +9,6 @@ allowed-tools: ["Agent", "Bash", "Read"]
 
 Capture information into an Obsidian Lifecycle System vault's Collect folder. Validate configuration, parse arguments, and spawn the collector agent to write the note.
 
-## Configuration
-
-The vault path is available via the `$LIFECYCLE_VAULT_PATH` environment variable. Do not resolve it — pass it by name to the agent, which will resolve it when needed.
-
 ## Argument Parsing
 
 Parse the input provided after `/lc-collect`:
@@ -36,7 +32,7 @@ Parse the input provided after `/lc-collect`:
 Use the Agent tool to spawn the `collector` agent. Build the prompt with this structure:
 
 ```
-Vault path: $LIFECYCLE_VAULT_PATH
+Vault: !`echo "${LIFECYCLE_VAULT:?LIFECYCLE_VAULT is not set in your settings.json}"`
 
 Task: Create a new note in the vault's Collect/ folder.
 
@@ -63,6 +59,12 @@ After reporting the captured note, check whether the user's original input menti
 
 > Would you also like me to add an entry to today's daily log referencing this note?
 
-If the user says yes, add a bullet to the daily log linking to the new Collect note. The daily log lives at `$LIFECYCLE_VAULT_PATH/Journal/<YYYY-MM-DD>.md` — create the file if it doesn't exist yet, or append to it if it does. Use the same date format the vault uses.
+If the user says yes, append a bullet to today's daily log linking to the new Collect note via the `obsidian` CLI:
+
+```
+obsidian vault=$LIFECYCLE_VAULT daily:append content="- [[<Note Title>]]"
+```
+
+The CLI handles file creation, date format, and journal location automatically — no manual path manipulation needed.
 
 If the user already asked for a daily log entry as part of their original capture request, handle it automatically without prompting.
