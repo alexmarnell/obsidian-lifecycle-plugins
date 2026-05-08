@@ -1,0 +1,19 @@
+{
+  "name": "obsidian-lifecycle-bridge",
+  "version": "0.1.0",
+  "description": "Bridge your Obsidian Lifecycle System vault into any Claude Code project — capture knowledge and recall notes across workspaces.",
+  "author": {
+    "name": "Alex Arnell"
+  },
+  "repository": "https://github.com/alexmarnell/obsidian-lifecycle-bridge",
+  "license": "MIT",
+  "keywords": [
+    "obsidian",
+    "lifecycle-system",
+    "knowledge-management",
+    "note-taking",
+    "vault",
+    "capture",
+    "recall"
+  ]
+}
