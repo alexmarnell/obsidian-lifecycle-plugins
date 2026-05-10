@@ -1,0 +1,24 @@
+{
+  "name": "obsidian-lifecycle-plugins",
+  "description": "Claude Code plugins for the Obsidian Lifecycle System.",
+  "owner": {
+    "name": "Alex Arnell"
+  },
+  "plugins": [
+    {
+      "name": "bridge",
+      "source": "./plugins/bridge",
+      "description": "Capture knowledge and recall vault notes across workspaces.",
+      "homepage": "https://github.com/alexmarnell/obsidian-lifecycle-plugins",
+      "repository": "https://github.com/alexmarnell/obsidian-lifecycle-plugins",
+      "license": "MIT",
+      "keywords": [
+        "obsidian",
+        "lifecycle-system",
+        "knowledge-management",
+        "note-taking",
+        "vault"
+      ]
+    }
+  ]
+}
