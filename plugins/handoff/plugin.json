@@ -1,0 +1,16 @@
+{
+  "name": "handoff",
+  "description": "Write disposable handoff documents to the OS temp directory so a fresh agent can continue the work.",
+  "author": {
+    "name": "Alex Arnell"
+  },
+  "repository": "https://github.com/alexmarnell/obsidian-lifecycle-plugins",
+  "license": "MIT",
+  "keywords": [
+    "handoff",
+    "context",
+    "session",
+    "continuity",
+    "claude-code"
+  ]
+}

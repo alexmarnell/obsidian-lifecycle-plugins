@@ -19,6 +19,20 @@
         "note-taking",
         "vault"
       ]
+    },
+    {
+      "name": "handoff",
+      "source": "./plugins/handoff",
+      "description": "Disposable handoff documents in the OS temp directory for fresh-agent continuity.",
+      "homepage": "https://github.com/alexmarnell/obsidian-lifecycle-plugins",
+      "repository": "https://github.com/alexmarnell/obsidian-lifecycle-plugins",
+      "license": "MIT",
+      "keywords": [
+        "handoff",
+        "context",
+        "session",
+        "continuity"
+      ]
     }
   ]
 }
